@@ -40,13 +40,11 @@ EXIT_CODE_FAVORITE_ENTRY_ALREADY_EXISTS=5
 EXIT_CODE_GSETTINGS_NOT_INSTALLED=6
 EXIT_CODE_CHMOD_FAILED=7
 EXIT_CODE_FILE_MOVE_FAILED=8
-EXIT_CODE_GSETTINGS_FAIL=9
+EXIT_CODE_GSETTINGS_FAILED=9
 
 DEST_DIR=/usr/share/applications
 
-gs=`which gsettings`
-
-if [ "${gs}" = "" ]
+if [ "`which gsettings`" = "" ]
 then
    echo "This application requires gsettings.  Install it from your package manager and try again."
    exit ${EXIT_CODE_GSETTINGS_NOT_INSTALLED}
@@ -135,7 +133,7 @@ then
       if [ ${rc} -ne 0 ]
       then
          echo "gsettings failed with exit code ${rc}"
-         exit ${EXIT_CODE_GSETTINGS_FAIL}
+         exit ${EXIT_CODE_GSETTINGS_FAILED}
       else
          echo "\nFavorite added successfully."
          exit ${EXIT_CODE_SUCCESS}
