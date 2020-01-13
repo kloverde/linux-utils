@@ -39,8 +39,10 @@ EXIT_CODE_FILE_EXISTS_IN_DESTINATION=4
 EXIT_CODE_FAVORITE_ENTRY_ALREADY_EXISTS=5
 EXIT_CODE_GSETTINGS_NOT_INSTALLED=6
 EXIT_CODE_CHMOD_FAILED=7
-EXIT_CODE_FILE_MOVE_FAILED=8
-EXIT_CODE_GSETTINGS_FAILED=9
+EXIT_CODE_CHOWN_FAILED=8
+EXIT_CODE_CHGRP_FAILED=9
+EXIT_CODE_FILE_MOVE_FAILED=10
+EXIT_CODE_GSETTINGS_FAILED=11
 
 DEST_DIR=/usr/share/applications
 
@@ -81,8 +83,8 @@ then
 
    echo "This script will add a desktop launcher to your Gnome favorites."
    echo "As part of this process, the launcher will be moved, not copied,"
-   echo "to /usr/share/applications, and its permissions will be set to"
-   echo "-rw-r--r-- (644)."
+   echo "to /usr/share/applications, its owner and group will be changed"
+   echo "to root, and its permissions will be set to -rw-r--r-- (644)."
 
    echo "\nCurrent favorites list:\n\n${faves}"
 
@@ -108,10 +110,28 @@ then
       sudo chmod 644 "${launcherFullPath}"
       rc=${?}
 
-      if [ ${rc} -ne 0 ]
+      if [ ${rc} != 0 ]
       then
          echo "Permission set failed with exit code ${rc}"
          exit ${EXIT_CODE_CHMOD_FAILED}
+      fi
+
+      sudo chown root "${launcherFullPath}"
+      rc=${?}
+
+      if [ ${rc} != 0 ]
+      then
+         echo "chown failed with exit code ${rc}"
+         exit ${EXIT_CODE_CHOWN_FAILED}
+      fi
+
+      sudo chgrp root "${launcherFullPath}"
+      rc=${?}
+
+      if [ ${rc} != 0 ]
+      then
+         echo "chgrp failed with exit code ${rc}"
+         exit ${EXIT_CODE_CHGRP_FAILED}
       fi
 
       echo "\nMoving file..."
@@ -119,7 +139,7 @@ then
       sudo mv "${launcherFullPath}" ${DEST_DIR}
       rc=${?}
 
-      if [ ${rc} -ne 0 ]
+      if [ ${rc} != 0 ]
       then
          echo "\nFile move failed with exit code ${rc}"
          exit ${EXIT_CODE_FILE_MOVE_FAILED}
@@ -130,7 +150,7 @@ then
       gsettings set org.gnome.shell favorite-apps "${newFaves}"
       rc=${?}
 
-      if [ ${rc} -ne 0 ]
+      if [ ${rc} != 0 ]
       then
          echo "gsettings failed with exit code ${rc}"
          exit ${EXIT_CODE_GSETTINGS_FAILED}
