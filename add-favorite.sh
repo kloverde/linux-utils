@@ -94,8 +94,7 @@ then
 
    echo "\nIf the updated list contains a formatting error, DO NOT continue.\n"
 
-   read -p "Proceed? (Y/N) " proceedWithUpdate
-   proceedWithUpdate=`echo "${proceedWithUpdate}" | tr '[:lower:]' '[:upper:]'`
+   proceedWithUpdate=""
 
    while [ "${proceedWithUpdate}" != "Y" -a "${proceedWithUpdate}" != "N" ]
    do
