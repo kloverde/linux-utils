@@ -35,16 +35,17 @@ EXIT_CODE_SUCCESS=0
 EXIT_CODE_INCORRECT_USAGE=1
 EXIT_CODE_USER_ABORT=2
 EXIT_CODE_FILE_NOT_FOUND=3
-EXIT_CODE_FILE_EXISTS_IN_DESTINATION=4
-EXIT_CODE_FAVORITE_ENTRY_ALREADY_EXISTS=5
-EXIT_CODE_GSETTINGS_NOT_INSTALLED=6
-EXIT_CODE_CHMOD_FAILED=7
-EXIT_CODE_CHOWN_FAILED=8
-EXIT_CODE_CHGRP_FAILED=9
-EXIT_CODE_FILE_MOVE_FAILED=10
-EXIT_CODE_GSETTINGS_FAILED=11
+EXIT_CODE_FAVORITE_ENTRY_ALREADY_EXISTS=4
+EXIT_CODE_GSETTINGS_NOT_INSTALLED=5
+EXIT_CODE_CHMOD_FAILED=6
+EXIT_CODE_CHOWN_FAILED=7
+EXIT_CODE_CHGRP_FAILED=8
+EXIT_CODE_FILE_MOVE_FAILED=9
+EXIT_CODE_GSETTINGS_FAILED=10
+EXIT_CODE_SYMBOLIC_LINK_FAILED=11
 
-DEST_DIR=/usr/share/applications
+LAUNCHER_HOME_DIR=~/.local/share/applications
+LAUNCHER_LINK_DIR=/usr/share/applications
 
 if [ "`which gsettings`" = "" ]
 then
@@ -60,108 +61,94 @@ fi
 
 launcherFullPath=`readlink -f "${1}"`
 
-if [ -f "${launcherFullPath}" ]
+if [ ! -f "${launcherFullPath}" ]
 then
-   launcherFilename=`basename "${launcherFullPath}"`
-
-   if [ -f "${DEST_DIR}/${launcherFilename}" ]
-   then
-      echo "File with matching name already exists in ${DEST_DIR}.  Aborting."
-      exit ${EXIT_CODE_FILE_EXISTS_IN_DESTINATION}
-   fi
-
-   faves=`gsettings get org.gnome.shell favorite-apps`
-
-   for f in `echo "${faves}" | sed -e "s/[][']//g"`
-   do
-      if [ "${launcherFilename}" = "${f}" ]
-      then
-         echo "Entry '${launcherFilename}' already exists as a favorite.  Aborting."
-         exit ${EXIT_CODE_FAVORITE_ENTRY_ALREADY_EXISTS}
-      fi
-   done
-
-   echo "This script will add a desktop launcher to your Gnome favorites."
-   echo "As part of this process, the launcher will be moved, not copied,"
-   echo "to /usr/share/applications, its owner and group will be changed"
-   echo "to root, and its permissions will be set to -rw-r--r-- (644)."
-
-   echo "\nCurrent favorites list:\n\n${faves}"
-
-   newFaves="`echo "${faves}" | sed 's/\]$//'`, '${launcherFilename}']"
-
-   echo "\nList will be updated to:\n\n${newFaves}"
-
-   echo "\nIf the updated list contains a formatting error, DO NOT continue.\n"
-
-   proceedWithUpdate=""
-
-   while [ "${proceedWithUpdate}" != "Y" -a "${proceedWithUpdate}" != "N" ]
-   do
-      read -p "Proceed? (Y/N) " proceedWithUpdate
-      proceedWithUpdate=`echo "${proceedWithUpdate}" | tr '[:lower:]' '[:upper:]'`
-   done
-
-   if [ "${proceedWithUpdate}" = "Y" ]
-   then
-      echo "\nSetting permissions..."
-
-      sudo chmod 644 "${launcherFullPath}"
-      rc=${?}
-
-      if [ ${rc} != 0 ]
-      then
-         echo "Permission set failed with exit code ${rc}"
-         exit ${EXIT_CODE_CHMOD_FAILED}
-      fi
-
-      sudo chown root "${launcherFullPath}"
-      rc=${?}
-
-      if [ ${rc} != 0 ]
-      then
-         echo "chown failed with exit code ${rc}"
-         exit ${EXIT_CODE_CHOWN_FAILED}
-      fi
-
-      sudo chgrp root "${launcherFullPath}"
-      rc=${?}
-
-      if [ ${rc} != 0 ]
-      then
-         echo "chgrp failed with exit code ${rc}"
-         exit ${EXIT_CODE_CHGRP_FAILED}
-      fi
-
-      echo "\nMoving file..."
-
-      sudo mv "${launcherFullPath}" ${DEST_DIR}
-      rc=${?}
-
-      if [ ${rc} != 0 ]
-      then
-         echo "\nFile move failed with exit code ${rc}"
-         exit ${EXIT_CODE_FILE_MOVE_FAILED}
-      fi
-
-      echo "\nUpdating gsettings database..."
-
-      gsettings set org.gnome.shell favorite-apps "${newFaves}"
-      rc=${?}
-
-      if [ ${rc} != 0 ]
-      then
-         echo "gsettings failed with exit code ${rc}"
-         exit ${EXIT_CODE_GSETTINGS_FAILED}
-      else
-         echo "\nFavorite added successfully."
-         exit ${EXIT_CODE_SUCCESS}
-      fi
-   else
-      exit ${EXIT_CODE_USER_ABORT}
-   fi
-else
    echo "File '${launcherFullPath}' doesn't exist"
    exit ${EXIT_CODE_FILE_NOT_FOUND}
 fi
 
+launcherFilename=`basename "${launcherFullPath}"`
+
+faves=`gsettings get org.gnome.shell favorite-apps`
+
+for f in `echo "${faves}" | sed -e "s/[][']//g"`
+do
+   if [ "${launcherFilename}" = "${f}" ]
+   then
+      echo "Entry '${launcherFilename}' already exists as a favorite.  Aborting."
+      exit ${EXIT_CODE_FAVORITE_ENTRY_ALREADY_EXISTS}
+   fi
+done
+
+echo "\nCurrent favorites list:\n\n${faves}"
+
+newFaves="`echo "${faves}" | sed 's/\]$//'`, '${launcherFilename}']"
+
+echo "\nList will be updated to:\n\n${newFaves}"
+
+echo "\nIf the updated list contains a formatting error, DO NOT continue.\n"
+
+proceedWithUpdate=""
+
+while [ "${proceedWithUpdate}" != "Y" -a "${proceedWithUpdate}" != "N" ]
+do
+   read -p "Proceed? (Y/N) " proceedWithUpdate
+   proceedWithUpdate=`echo "${proceedWithUpdate}" | tr '[:lower:]' '[:upper:]'`
+done
+
+if [ "${proceedWithUpdate}" = "Y" ]
+then
+   echo "\nSetting permissions..."
+
+   sudo chmod 644 "${launcherFullPath}"
+   rc=${?}
+
+   if [ ${rc} != 0 ]
+   then
+      echo "Permission set failed with exit code ${rc}"
+      exit ${EXIT_CODE_CHMOD_FAILED}
+   fi
+
+   echo "\nMoving file..."
+
+   mkdir -p "${LAUNCHER_HOME_DIR}"
+
+   mv "${launcherFullPath}" "${LAUNCHER_HOME_DIR}"
+   rc=${?}
+
+   if [ ${rc} != 0 ]
+   then
+      echo "\nFile move failed with exit code ${rc}"
+      exit ${EXIT_CODE_FILE_MOVE_FAILED}
+   fi
+
+   chmod 644 "${LAUNCHER_HOME_DIR}/${launcherFilename}"
+
+   if [ ! -f "${LAUNCHER_LINK_DIR}/${launcherFilename}" ]
+   then
+      sudo ln -s "${LAUNCHER_HOME_DIR}/${launcherFilename}" --target-directory "${LAUNCHER_LINK_DIR}"
+      rc=${?}
+
+      if [ ${rc} != 0 ]
+      then
+         echo "Unable to create symbolic link in ${LAUNCHER_LINK_DIR}.  Aborting."
+         exit ${EXIT_CODE_SYMBOLIC_LINK_FAILED}
+      fi
+   fi
+
+   echo "\nUpdating gsettings database..."
+
+   gsettings set org.gnome.shell favorite-apps "${newFaves}"
+   rc=${?}
+
+   if [ ${rc} != 0 ]
+   then
+      echo "gsettings failed with exit code ${rc}"
+      exit ${EXIT_CODE_GSETTINGS_FAILED}
+   else
+      echo "\nFavorite added successfully."
+      exit ${EXIT_CODE_SUCCESS}
+   fi
+else
+   exit ${EXIT_CODE_USER_ABORT}
+fi
