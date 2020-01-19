@@ -99,7 +99,7 @@ addGnomeFavoriteOrDie() {
    if [ ${?} = 1 ]
    then
       echo "Entry '${1}' already exists as a favorite.  Aborting."
-      return ${EXIT_CODE_FAVORITE_ENTRY_ALREADY_EXISTS}
+      exit ${EXIT_CODE_FAVORITE_ENTRY_ALREADY_EXISTS}
    fi
 
    faves=`getGnomeFavorites`
