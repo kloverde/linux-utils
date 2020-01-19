@@ -1,6 +1,6 @@
 add-favorite.sh
 
-This is a script for Gnome users that can 'favorite', or pin, an application if you don't see the option to do so when right-clicking the application's icon or taskbar button.  That's something that shouldn't really happen, but I ran into it once with a specific application in Zorin OS.  I created this script so I wouldn't have to remember what to do if it happens again.
+This is a script for Gnome users that can 'favorite', or pin, an application if you don't see the option to do so when right-clicking the application's icon or taskbar button.  This is an issue that I periodically encounter, so I created this script to make the process simpler.
 
 You'll need to create a .desktop launcher and then provide it as a command-line argument to the script.  The script will take care of the rest.  For information on how to create a launcher, see https://askubuntu.com/a/64237.
 
