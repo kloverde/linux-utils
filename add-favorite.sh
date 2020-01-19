@@ -93,13 +93,13 @@ doesFavoriteExist() {
    return 0
 }
 
-addGnomeFavoriteOrDie() {
+addGnomeFavorite() {
    doesFavoriteExist "${1}"
 
    if [ ${?} = 1 ]
    then
       echo "Entry '${1}' already exists as a favorite.  Aborting."
-      exit ${EXIT_CODE_FAVORITE_ENTRY_ALREADY_EXISTS}
+      return ${EXIT_CODE_FAVORITE_ENTRY_ALREADY_EXISTS}
    fi
 
    faves=`getGnomeFavorites`
@@ -113,11 +113,11 @@ addGnomeFavoriteOrDie() {
    if [ ${rc} != 0 ]
    then
       echo "gsettings failed with exit code ${rc}"
-      exit ${EXIT_CODE_GSETTINGS_FAILED}
-   else
-      echo "Database updated successfully\n\nFavorite added successfully"
-      exit ${EXIT_CODE_SUCCESS}
+      return ${EXIT_CODE_GSETTINGS_FAILED}
    fi
+
+   echo "Database updated successfully\n\nFavorite added successfully"
+   return ${EXIT_CODE_SUCCESS}
 }
 
 main() {
@@ -134,7 +134,7 @@ main() {
    if [ ${?} != 0 ]
    then
       echo "File '${2}' doesn't exist.  Aborting."
-      exit ${EXIT_CODE_FILE_NOT_FOUND}
+      return ${EXIT_CODE_FILE_NOT_FOUND}
    fi
 
    launcherFilename=`basename "${launcherFullPath}"`
@@ -156,7 +156,7 @@ main() {
          if [ -f "${LAUNCHER_HOME_DIR}/${launcherFilename}" ]
          then
             echo "A launcher with that filename is already installed.  Aborting."
-            exit ${EXIT_CODE_LAUNCHER_ALREADY_INSTALLED}
+            return ${EXIT_CODE_LAUNCHER_ALREADY_INSTALLED}
          fi
 
          echo "\nSetting permissions to rw-r--r-- ..."
@@ -169,7 +169,7 @@ main() {
             echo "Permissions set successfully"
          else
             echo "Permission set failed with exit code ${rc}"
-            exit ${EXIT_CODE_CHMOD_FAILED}
+            return ${EXIT_CODE_CHMOD_FAILED}
          fi
 
          echo "\nMoving ${launcherFullPath} to ${LAUNCHER_HOME_DIR}..."
@@ -184,7 +184,7 @@ main() {
             echo "File moved successfully"
          else
             echo "File move failed with exit code ${rc}"
-            exit ${EXIT_CODE_FILE_MOVE_FAILED}
+            return ${EXIT_CODE_FILE_MOVE_FAILED}
          fi
 
          chmod 644 "${LAUNCHER_HOME_DIR}/${launcherFilename}"
@@ -207,15 +207,18 @@ main() {
                   echo "Symlink created successfully"
                else
                   echo "Unable to create symbolic link in ${LAUNCHER_LINK_DIR}.  Aborting."
-                  exit ${EXIT_CODE_SYMBOLIC_LINK_FAILED}
+                  return ${EXIT_CODE_SYMBOLIC_LINK_FAILED}
                fi
             fi
+         else
+            echo "\nA launcher with a matching filename already exists in ${LAUNCHER_LINK_DIR}, so you won't be able to make your launcher available to others."
          fi
       fi
 
-      addGnomeFavoriteOrDie "${launcherFilename}"
+      addGnomeFavorite "${launcherFilename}"
+      return ${?}
    else
-      exit ${EXIT_CODE_USER_ABORT}
+      return ${EXIT_CODE_USER_ABORT}
    fi
 }
 
@@ -261,3 +264,5 @@ else
       exit ${EXIT_CODE_INCORRECT_USAGE}
    fi
 fi
+
+exit ${?}
