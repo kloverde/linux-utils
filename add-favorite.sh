@@ -36,105 +36,74 @@ EXIT_CODE_INCORRECT_USAGE=1
 EXIT_CODE_USER_ABORT=2
 EXIT_CODE_FILE_NOT_FOUND=3
 EXIT_CODE_FAVORITE_ENTRY_ALREADY_EXISTS=4
-EXIT_CODE_GSETTINGS_NOT_INSTALLED=5
-EXIT_CODE_CHMOD_FAILED=6
-EXIT_CODE_CHOWN_FAILED=7
-EXIT_CODE_CHGRP_FAILED=8
-EXIT_CODE_FILE_MOVE_FAILED=9
-EXIT_CODE_GSETTINGS_FAILED=10
-EXIT_CODE_SYMBOLIC_LINK_FAILED=11
+EXIT_CODE_LAUNCHER_ALREADY_INSTALLED=5
+EXIT_CODE_REQUIRED_SOFTWARE_NOT_INSTALLED=6
+EXIT_CODE_CHMOD_FAILED=7
+EXIT_CODE_CHOWN_FAILED=8
+EXIT_CODE_CHGRP_FAILED=9
+EXIT_CODE_FILE_MOVE_FAILED=10
+EXIT_CODE_GSETTINGS_FAILED=11
+EXIT_CODE_SYMBOLIC_LINK_FAILED=12
 
 LAUNCHER_HOME_DIR=~/.local/share/applications
 LAUNCHER_LINK_DIR=/usr/share/applications
 
-if [ "`which gsettings`" = "" ]
-then
-   echo "This application requires gsettings.  Install it from your package manager and try again."
-   exit ${EXIT_CODE_GSETTINGS_NOT_INSTALLED}
-fi
 
-if [ ${#} != 1 ]
-then
-   echo "Usage:  ${0} [.desktop file]"
-   exit ${EXIT_CODE_INCORRECT_USAGE}
-fi
-
-launcherFullPath=`readlink -f "${1}"`
-
-if [ ! -f "${launcherFullPath}" ]
-then
-   echo "File '${launcherFullPath}' doesn't exist"
-   exit ${EXIT_CODE_FILE_NOT_FOUND}
-fi
-
-launcherFilename=`basename "${launcherFullPath}"`
-
-faves=`gsettings get org.gnome.shell favorite-apps`
-
-for f in `echo "${faves}" | sed -e "s/[][']//g"`
-do
-   if [ "${launcherFilename}" = "${f}" ]
+require() {
+   if [ "`which ${1}`" = "" ]
    then
-      echo "Entry '${launcherFilename}' already exists as a favorite.  Aborting."
-      exit ${EXIT_CODE_FAVORITE_ENTRY_ALREADY_EXISTS}
-   fi
-done
-
-echo "\nCurrent favorites list:\n\n${faves}"
-
-newFaves="`echo "${faves}" | sed 's/\]$//'`, '${launcherFilename}']"
-
-echo "\nList will be updated to:\n\n${newFaves}"
-
-echo "\nIf the updated list contains a formatting error, DO NOT continue.\n"
-
-proceedWithUpdate=""
-
-while [ "${proceedWithUpdate}" != "Y" -a "${proceedWithUpdate}" != "N" ]
-do
-   read -p "Proceed? (Y/N) " proceedWithUpdate
-   proceedWithUpdate=`echo "${proceedWithUpdate}" | tr '[:lower:]' '[:upper:]'`
-done
-
-if [ "${proceedWithUpdate}" = "Y" ]
-then
-   echo "\nSetting permissions..."
-
-   sudo chmod 644 "${launcherFullPath}"
-   rc=${?}
-
-   if [ ${rc} != 0 ]
-   then
-      echo "Permission set failed with exit code ${rc}"
-      exit ${EXIT_CODE_CHMOD_FAILED}
+      echo "This application requires ${1}.  Install it using your package manager and try again."
+      return ${EXIT_CODE_REQUIRED_SOFTWARE_NOT_INSTALLED}
    fi
 
-   echo "\nMoving file..."
+   return 0
+}
 
-   mkdir -p "${LAUNCHER_HOME_DIR}"
+yesNo() {
+   answer=""
 
-   mv "${launcherFullPath}" "${LAUNCHER_HOME_DIR}"
-   rc=${?}
+   while [ "${answer}" != "Y" -a "${answer}" != "N" ]
+   do
+      read -p "${1} (Y/N) " answer
+      answer=`echo "${answer}" | tr '[:lower:]' '[:upper:]'`
+   done
 
-   if [ ${rc} != 0 ]
-   then
-      echo "\nFile move failed with exit code ${rc}"
-      exit ${EXIT_CODE_FILE_MOVE_FAILED}
-   fi
+   echo ${answer}
+}
 
-   chmod 644 "${LAUNCHER_HOME_DIR}/${launcherFilename}"
+getGnomeSetting() {
+   echo `gsettings get org.gnome.shell ${1}`
+}
 
-   if [ ! -f "${LAUNCHER_LINK_DIR}/${launcherFilename}" ]
-   then
-      sudo ln -s "${LAUNCHER_HOME_DIR}/${launcherFilename}" --target-directory "${LAUNCHER_LINK_DIR}"
-      rc=${?}
+getGnomeFavorites() {
+   echo `getGnomeSetting favorite-apps`
+}
 
-      if [ ${rc} != 0 ]
+doesFavoriteExist() {
+   faves=`getGnomeFavorites`
+
+   for f in `echo "${faves}" | sed -e "s/[][']//g"`
+   do
+      if [ "${f}" = "${1}" ]
       then
-         echo "Unable to create symbolic link in ${LAUNCHER_LINK_DIR}.  Aborting."
-         exit ${EXIT_CODE_SYMBOLIC_LINK_FAILED}
+         return 1
       fi
+   done
+
+   return 0
+}
+
+addGnomeFavoriteOrDie() {
+   doesFavoriteExist "${1}"
+
+   if [ ${?} = 1 ]
+   then
+      echo "Entry '${1}' already exists as a favorite.  Aborting."
+      return ${EXIT_CODE_FAVORITE_ENTRY_ALREADY_EXISTS}
    fi
+
+   faves=`getGnomeFavorites`
+   newFaves="`echo "${faves}" | sed 's/\]$//'`, '${1}']"
 
    echo "\nUpdating gsettings database..."
 
@@ -146,9 +115,149 @@ then
       echo "gsettings failed with exit code ${rc}"
       exit ${EXIT_CODE_GSETTINGS_FAILED}
    else
-      echo "\nFavorite added successfully."
+      echo "Database updated successfully\n\nFavorite added successfully"
       exit ${EXIT_CODE_SUCCESS}
    fi
+}
+
+main() {
+   require "gsettings"
+   require "sudo"
+   require "sed"
+   require "basename"
+   require "tr"
+   require "readlink"
+   require "ln"
+
+   launcherFullPath=`readlink -e ${2}`
+
+   if [ ${?} != 0 ]
+   then
+      echo "File '${2}' doesn't exist.  Aborting."
+      exit ${EXIT_CODE_FILE_NOT_FOUND}
+   fi
+
+   launcherFilename=`basename "${launcherFullPath}"`
+
+   doesFavoriteExist "`basename ${2}`"
+
+   if [ ${?} = 1 ]
+   then
+      echo "A launcher with that filename already exists as a favorite.  Aborting."
+      return ${EXIT_CODE_FAVORITE_ENTRY_ALREADY_EXISTS}
+   fi
+
+   proceed=`yesNo "Confirm:  make ${launcherFilename} a favorite app?"`
+
+   if [ "${proceed}" = "Y" ]
+   then
+      if [ "${1}" = "--install" ]
+      then
+         if [ -f "${LAUNCHER_HOME_DIR}/${launcherFilename}" ]
+         then
+            echo "A launcher with that filename is already installed.  Aborting."
+            exit ${EXIT_CODE_LAUNCHER_ALREADY_INSTALLED}
+         fi
+
+         echo "\nSetting permissions to rw-r--r-- ..."
+
+         sudo chmod 644 "${launcherFullPath}"
+         rc=${?}
+
+         if [ ${rc} = 0 ]
+         then
+            echo "Permissions set successfully"
+         else
+            echo "Permission set failed with exit code ${rc}"
+            exit ${EXIT_CODE_CHMOD_FAILED}
+         fi
+
+         echo "\nMoving ${launcherFullPath} to ${LAUNCHER_HOME_DIR}..."
+
+         mkdir -p "${LAUNCHER_HOME_DIR}"
+
+         mv "${launcherFullPath}" "${LAUNCHER_HOME_DIR}"
+         rc=${?}
+
+         if [ ${rc} = 0 ]
+         then
+            echo "File moved successfully"
+         else
+            echo "File move failed with exit code ${rc}"
+            exit ${EXIT_CODE_FILE_MOVE_FAILED}
+         fi
+
+         chmod 644 "${LAUNCHER_HOME_DIR}/${launcherFilename}"
+
+         if [ ! -f "${LAUNCHER_LINK_DIR}/${launcherFilename}" ]
+         then
+            echo ""
+
+            makePublic=`yesNo "Make this launcher available to others?"`
+
+            if [ "${makePublic}" = "Y" ]
+            then
+               echo "\nCreating symlink in ${LAUNCHER_LINK_DIR}..."
+
+               sudo ln -s "${LAUNCHER_HOME_DIR}/${launcherFilename}" --target-directory "${LAUNCHER_LINK_DIR}"
+               rc=${?}
+
+               if [ ${rc} = 0 ]
+               then
+                  echo "Symlink created successfully"
+               else
+                  echo "Unable to create symbolic link in ${LAUNCHER_LINK_DIR}.  Aborting."
+                  exit ${EXIT_CODE_SYMBOLIC_LINK_FAILED}
+               fi
+            fi
+         fi
+      fi
+
+      addGnomeFavoriteOrDie "${launcherFilename}"
+   else
+      exit ${EXIT_CODE_USER_ABORT}
+   fi
+}
+
+usage() {
+   echo "Usage:  `basename ${0}` [[--install]] [.desktop file]\n"
+
+   echo "OPTIONS\n"
+
+   echo "install     Moves the launcher to your home directory"
+   echo "            and optionally creates a public symlink."
+   echo "            If the file already exists in your home"
+   echo "            directory and you just want to set it as"
+   echo "            a favorite, omit this flag."
+}
+
+
+if [ ${#} = 1 ]
+then
+   if [ "${1}" = "--usage" -o "${1}" = "--help" ]
+   then
+      usage
+   else
+      if [ "`echo ${1} | cut -c1-1`" = "-" ]
+      then
+         usage
+         exit ${EXIT_CODE_INCORRECT_USAGE}
+      fi
+
+      main "--no-install" "${1}"
+   fi
 else
-   exit ${EXIT_CODE_USER_ABORT}
+   if [ ${#} = 2 ]
+   then
+      if [ "${1}" = "--install" ]
+      then
+         main "${1}" ${2}
+      else
+         usage
+         exit ${EXIT_CODE_INCORRECT_USAGE}
+      fi
+   else
+      usage
+      exit ${EXIT_CODE_INCORRECT_USAGE}
+   fi
 fi
