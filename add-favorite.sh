@@ -161,7 +161,7 @@ main() {
 
          echo "\nSetting permissions to rw-r--r-- ..."
 
-         sudo chmod 644 "${launcherFullPath}"
+         chmod 644 "${launcherFullPath}"
          rc=${?}
 
          if [ ${rc} = 0 ]
@@ -186,8 +186,6 @@ main() {
             echo "File move failed with exit code ${rc}"
             return ${EXIT_CODE_FILE_MOVE_FAILED}
          fi
-
-         chmod 644 "${LAUNCHER_HOME_DIR}/${launcherFilename}"
 
          if [ ! -f "${LAUNCHER_LINK_DIR}/${launcherFilename}" ]
          then
