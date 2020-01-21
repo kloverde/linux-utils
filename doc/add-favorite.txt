@@ -7,4 +7,4 @@ You'll need to create a .desktop launcher and then provide it as a command-line 
 
 The script has two modes of adding a favorite:  either "installing" or not installing the launcher.  Installing a launcher (by using the optional --install flag) will move the specified launcher to /home/[you]/.local/share/applications.  This option is intended to be used with launchers you create yourself and would therefore want to restore from a backup if the need should arise.  It will then offer to create a symlink to it in /usr/share/applications if you want to share it with other accounts.
 
-If you're favoriting an application that already has a launcher not owned by you (such as the ones in /usr/share/applications), you shouldn't use the --install flag.
+If you're favoriting an application with a preexisting launcher that's not yours (such as the ones in /usr/share/applications), you shouldn't use the --install flag.
