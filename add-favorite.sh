@@ -53,10 +53,8 @@ require() {
    if [ "`which ${1}`" = "" ]
    then
       echo "This application requires ${1}.  Install it using your package manager and try again."
-      return ${EXIT_CODE_REQUIRED_SOFTWARE_NOT_INSTALLED}
+      exit ${EXIT_CODE_REQUIRED_SOFTWARE_NOT_INSTALLED}
    fi
-
-   return 0
 }
 
 yesNo() {
