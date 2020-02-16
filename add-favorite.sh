@@ -230,11 +230,11 @@ usage() {
 
    echo "OPTIONS\n"
 
-   echo "install     Moves the launcher to your home directory"
-   echo "            and optionally creates a public symlink."
-   echo "            If the file already exists in your home"
-   echo "            directory and you just want to set it as"
-   echo "            a favorite, omit this flag."
+   echo "--install     Moves the launcher to your home directory"
+   echo "              and optionally creates a public symlink."
+   echo "              If the file already exists in your home"
+   echo "              directory and you just want to set it as"
+   echo "              a favorite, omit this flag."
 }
 
 
