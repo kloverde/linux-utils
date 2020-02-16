@@ -1,6 +1,5 @@
 #!/bin/sh
 
-
 # add-favorite.sh
 # https://www.github.com/kloverde/linux-utils
 #
@@ -80,41 +79,39 @@ getGnomeFavorites() {
 doesFavoriteExist() {
    faves=`getGnomeFavorites`
 
-   for f in `echo "${faves}" | sed -e "s/[][']//g"`
+   for f in `echo "${faves}" | sed -e "s/[][',]//g"`
    do
       if [ "${f}" = "${1}" ]
       then
          return 1
       fi
    done
-
+ 
    return 0
 }
 
 addGnomeFavorite() {
    doesFavoriteExist "${1}"
 
-   if [ ${?} = 1 ]
+   if [ ${?} = 0 ]
    then
-      echo "Entry '${1}' already exists as a favorite.  Aborting."
-      return ${EXIT_CODE_FAVORITE_ENTRY_ALREADY_EXISTS}
+      faves=`getGnomeFavorites`
+      newFaves="`echo "${faves}" | sed 's/\]$//'`, '${1}']"
+
+      echo "\nUpdating gsettings database..."
+
+      gsettings set org.gnome.shell favorite-apps "${newFaves}"
+      rc=${?}
+
+      if [ ${rc} != 0 ]
+      then 
+         echo "gsettings failed with exit code ${rc}"
+         return ${EXIT_CODE_GSETTINGS_FAILED}
+      fi 
+
+      echo "Database updated successfully\n\nFavorite added successfully"
    fi
 
-   faves=`getGnomeFavorites`
-   newFaves="`echo "${faves}" | sed 's/\]$//'`, '${1}']"
-
-   echo "\nUpdating gsettings database..."
-
-   gsettings set org.gnome.shell favorite-apps "${newFaves}"
-   rc=${?}
-
-   if [ ${rc} != 0 ]
-   then
-      echo "gsettings failed with exit code ${rc}"
-      return ${EXIT_CODE_GSETTINGS_FAILED}
-   fi
-
-   echo "Database updated successfully\n\nFavorite added successfully"
    return ${EXIT_CODE_SUCCESS}
 }
 
@@ -141,22 +138,30 @@ main() {
 
    if [ ${?} = 1 ]
    then
-      echo "A launcher with that filename already exists as a favorite.  Aborting."
-      return ${EXIT_CODE_FAVORITE_ENTRY_ALREADY_EXISTS}
-   fi
+      if [ "${1}" = "--install" ]
+      then
+         echo "Your desktop is already configured with this launcher as a favorite.\n"
 
-   proceed=`yesNo "Confirm:  make ${launcherFilename} a favorite app?"`
+         if [ -f "${LAUNCHER_HOME_DIR}/${launcherFilename}" ]
+         then
+            echo "If you continue, the launcher in your home directory will be replaced.\n"
+         fi
+      fi
+
+      proceed=`yesNo "Do you want to continue?"`
+
+      if [ "${proceed}" = "N" ]
+      then
+         return ${EXIT_CODE_FAVORITE_ENTRY_ALREADY_EXISTS}
+      fi
+   else
+      proceed=`yesNo "Confirm:  Make ${launcherFilename} a favorite app?"`
+   fi
 
    if [ "${proceed}" = "Y" ]
    then
       if [ "${1}" = "--install" ]
       then
-         if [ -f "${LAUNCHER_HOME_DIR}/${launcherFilename}" ]
-         then
-            echo "A launcher with that filename is already installed.  Aborting."
-            return ${EXIT_CODE_LAUNCHER_ALREADY_INSTALLED}
-         fi
-
          echo "\nSetting permissions to rw-r--r-- ..."
 
          chmod 644 "${launcherFullPath}"
@@ -179,35 +184,37 @@ main() {
 
          if [ ${rc} = 0 ]
          then
-            echo "File moved successfully"
+            echo "File moved successfully\n"
          else
             echo "File move failed with exit code ${rc}"
             return ${EXIT_CODE_FILE_MOVE_FAILED}
          fi
 
-         if [ ! -f "${LAUNCHER_LINK_DIR}/${launcherFilename}" ]
+         if [ -f "${LAUNCHER_LINK_DIR}/${launcherFilename}" ]
          then
-            echo ""
+            echo "A global launcher with a matching filename already exists in ${LAUNCHER_LINK_DIR}.\n"
 
-            makePublic=`yesNo "Make this launcher available to others?"`
-
-            if [ "${makePublic}" = "Y" ]
-            then
-               echo "\nCreating symlink in ${LAUNCHER_LINK_DIR}..."
-
-               sudo ln -s "${LAUNCHER_HOME_DIR}/${launcherFilename}" --target-directory "${LAUNCHER_LINK_DIR}"
-               rc=${?}
-
-               if [ ${rc} = 0 ]
-               then
-                  echo "Symlink created successfully"
-               else
-                  echo "Unable to create symbolic link in ${LAUNCHER_LINK_DIR}.  Aborting."
-                  return ${EXIT_CODE_SYMBOLIC_LINK_FAILED}
-               fi
-            fi
+            makePublic=`yesNo "Replace the global launcher with yours?  This could affect other users."`
          else
-            echo "\nA launcher with a matching filename already exists in ${LAUNCHER_LINK_DIR}, so you won't be able to make your launcher available to others."
+            makePublic=`yesNo "Make this launcher available to others?"`
+         fi
+
+         if [ "${makePublic}" = "Y" ]
+         then
+            echo "\nCreating symlink in ${LAUNCHER_LINK_DIR}..."
+
+            sudo rm "${LAUNCHER_LINK_DIR}/${launcherFilename}"
+
+            sudo ln -s "${LAUNCHER_HOME_DIR}/${launcherFilename}" --target-directory "${LAUNCHER_LINK_DIR}"
+            rc=${?}
+
+            if [ ${rc} = 0 ]
+            then
+               echo "Symlink created successfully"
+            else
+               echo "Unable to create symbolic link in ${LAUNCHER_LINK_DIR}.  Aborting."
+               return ${EXIT_CODE_SYMBOLIC_LINK_FAILED}
+            fi
          fi
       fi
 
