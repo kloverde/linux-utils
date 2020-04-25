@@ -1,0 +1,12 @@
+#/bin/bash
+
+if [ "${REQUIRE_ERR}" = "" ]
+then
+   export REQUIRE_ERR=0
+fi
+
+if [ "`which ${1}`" = "" ]
+then
+   echo "This application requires ${1}.  Install it using your package manager and try again."
+   export REQUIRE_ERR=1
+fi
