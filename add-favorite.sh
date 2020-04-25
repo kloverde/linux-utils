@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # add-favorite.sh
 # https://www.github.com/kloverde/linux-utils
@@ -30,6 +30,16 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
+. require "bash"
+. require "printf"
+. require "gsettings"
+. require "sudo"
+. require "sed"
+. require "basename"
+. require "tr"
+. require "readlink"
+. require "ln"
+
 EXIT_CODE_SUCCESS=0
 EXIT_CODE_INCORRECT_USAGE=1
 EXIT_CODE_USER_ABORT=2
@@ -47,26 +57,6 @@ EXIT_CODE_SYMBOLIC_LINK_FAILED=12
 LAUNCHER_HOME_DIR=~/.local/share/applications
 LAUNCHER_LINK_DIR=/usr/share/applications
 
-
-require() {
-   if [ "`which ${1}`" = "" ]
-   then
-      echo "This application requires ${1}.  Install it using your package manager and try again."
-      exit ${EXIT_CODE_REQUIRED_SOFTWARE_NOT_INSTALLED}
-   fi
-}
-
-yesNo() {
-   answer=""
-
-   while [ "${answer}" != "Y" -a "${answer}" != "N" ]
-   do
-      read -p "${1} (Y/N) " answer
-      answer=`echo "${answer}" | tr '[:lower:]' '[:upper:]'`
-   done
-
-   echo ${answer}
-}
 
 getGnomeSetting() {
    echo `gsettings get org.gnome.shell ${1}`
@@ -86,7 +76,7 @@ doesFavoriteExist() {
          return 1
       fi
    done
- 
+
    return 0
 }
 
@@ -104,10 +94,10 @@ addGnomeFavorite() {
       rc=${?}
 
       if [ ${rc} != 0 ]
-      then 
+      then
          echo "gsettings failed with exit code ${rc}"
          return ${EXIT_CODE_GSETTINGS_FAILED}
-      fi 
+      fi
 
       echo "Database updated successfully\n\nFavorite added successfully"
    fi
@@ -116,14 +106,6 @@ addGnomeFavorite() {
 }
 
 main() {
-   require "gsettings"
-   require "sudo"
-   require "sed"
-   require "basename"
-   require "tr"
-   require "readlink"
-   require "ln"
-
    launcherFullPath=`readlink -e ${2}`
 
    if [ ${?} != 0 ]
@@ -148,17 +130,17 @@ main() {
          fi
       fi
 
-      proceed=`yesNo "Do you want to continue?"`
+      . yesno "Do you want to continue?"
 
-      if [ "${proceed}" = "N" ]
+      if [ "${YESNO}" = "N" ]
       then
          return ${EXIT_CODE_FAVORITE_ENTRY_ALREADY_EXISTS}
       fi
    else
-      proceed=`yesNo "Confirm:  Make ${launcherFilename} a favorite app?"`
+      . yesno "Confirm:  Make ${launcherFilename} a favorite app?"
    fi
 
-   if [ "${proceed}" = "Y" ]
+   if [ "${YESNO}" = "Y" ]
    then
       if [ "${1}" = "--install" ]
       then
@@ -194,12 +176,12 @@ main() {
          then
             echo "A global launcher with a matching filename already exists in ${LAUNCHER_LINK_DIR}.\n"
 
-            makePublic=`yesNo "Replace the global launcher with yours?  This could affect other users."`
+            . yesno "Replace the global launcher with yours?  This could affect other users."
          else
-            makePublic=`yesNo "Make this launcher available to others?"`
+            . yesNo "Make this launcher available to others?"
          fi
 
-         if [ "${makePublic}" = "Y" ]
+         if [ "${YESNO}" = "Y" ]
          then
             echo "\nCreating symlink in ${LAUNCHER_LINK_DIR}..."
 
@@ -237,6 +219,10 @@ usage() {
    echo "              a favorite, omit this flag."
 }
 
+if [ ${REQUIRE_ERR} -ne 0 ]
+then
+   exit ${EXIT_CODE_REQUIRED_SOFTWARE_NOT_INSTALLED}
+fi
 
 if [ ${#} = 1 ]
 then
