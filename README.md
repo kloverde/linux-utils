@@ -17,6 +17,6 @@ A helper script to check for script dependencies
 Upgrades Thunderbird to the latest version.  This is applicable if you don't manage Thunderbird via a package manager.
 
 
-#yesno
+# yesno
 
 A helper script to display a configurable yes/no prompt
