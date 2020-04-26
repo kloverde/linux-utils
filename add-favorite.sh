@@ -58,6 +58,9 @@ EXIT_CODE_SYMBOLIC_LINK_FAILED=12
 LAUNCHER_HOME_DIR=~/.local/share/applications
 LAUNCHER_LINK_DIR=/usr/share/applications
 
+shopt -s expand_aliases
+alias echo="echo -e"
+
 
 getGnomeSetting() {
    echo `gsettings get org.gnome.shell ${1}`
