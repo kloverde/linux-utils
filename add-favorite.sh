@@ -31,7 +31,6 @@
 
 
 . require "bash"
-. require "printf"
 . require "gsettings"
 . require "sudo"
 . require "sed"
