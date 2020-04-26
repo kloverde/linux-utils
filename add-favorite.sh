@@ -38,6 +38,8 @@
 . require "tr"
 . require "readlink"
 . require "ln"
+. require "tr"    # dependency of yesno
+
 
 EXIT_CODE_SUCCESS=0
 EXIT_CODE_INCORRECT_USAGE=1
