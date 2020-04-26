@@ -14,7 +14,12 @@ A helper script to check for script dependencies
 
 # update-thunderbird.sh
 
-Upgrades Thunderbird to the latest version.  This is applicable if you don't manage Thunderbird via a package manager.
+Upgrades Thunderbird to the latest version.  This is useful if you don't manage Thunderbird via a package manager.
+
+
+# turn-off-screen.sh
+
+Turns off the monitor without putting the machine into suspend mode
 
 
 # yesno
