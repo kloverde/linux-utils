@@ -31,11 +31,11 @@
 
 
 . require "bash"
+. require "getopt"
 . require "gsettings"
 . require "sudo"
 . require "sed"
 . require "basename"
-. require "tr"
 . require "readlink"
 . require "ln"
 . require "tr"    # dependency of yesno
