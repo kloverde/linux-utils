@@ -70,8 +70,6 @@ main() {
 
    cd "${WALLPAPER_DIR}"
 
-   currPicNum=0
-
    while [ true ]
    do
       pics=`ls ${FILE_TYPES} 2> /dev/null`
