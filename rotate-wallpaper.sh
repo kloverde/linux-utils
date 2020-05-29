@@ -155,7 +155,7 @@ usage() {
 
    echo "Required arguments:\n"
    echo "-d, --directory [VALUE]   Directory containing images"
-   echo "-f, --file-types [VALUE]  Comma-separated wildcard string, like \"*png, *.jpg\""
+   echo "-f, --file-types [VALUE]  Space-separated wildcard string, like \"*png *.jpg\""
    echo "-i, --interval [VALUE]    Rotation interval, measured in minutes"
 
    echo "\nOptional arguments:\n"
