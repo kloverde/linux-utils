@@ -12,6 +12,11 @@ The script has two modes of adding a favorite:  either "installing" or not insta
 A helper script to check for script dependencies
 
 
+# rotate-wallpaper
+
+This is a script for Gnome users that changes the desktop background on a schedule.  The directory, file types and rotation interval are provided as command-line arguments.  I wouldn't be surprised if plenty of distros have this functionality out of the box, but if yours doesn't, this does the job -- just call it from your .profile.
+
+
 # turn-off-screen.sh
 
 Turns off the monitor without putting the machine into suspend mode

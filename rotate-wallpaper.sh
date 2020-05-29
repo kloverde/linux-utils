@@ -31,21 +31,31 @@
 
 
 . require "bash"
+. require "getopt"
 . require "sleep"
 . require "gsettings"
 . require "head"
 . require "tail"
+. require "sleep"
 
+shopt -s expand_aliases
+alias echo="echo -e"
 
-EXIT_CODE_REQUIRED_SOFTWARE_NOT_INSTALLED=1
-EXIT_CODE_WALLPAPER_DIR_NOT_EXIST=2
-
-# Settings
-WALLPAPER_DIR=~/Pictures/Wallpapers
-FILE_TYPES="*.jpg *.png"
-CHANGE_INTERVAL_MINUTES=10
+declare -r EXIT_CODE_USAGE=1
+declare -r EXIT_CODE_REQUIRED_SOFTWARE_NOT_INSTALLED=2
+declare -r EXIT_CODE_WALLPAPER_DIR_NOT_EXIST=3
 
 main() {
+   WALLPAPER_DIR=""
+   FILE_TYPES=""
+   CHANGE_INTERVAL_MINUTES=0
+
+   parseArgs "${@}"
+
+   #echo "directory  = $WALLPAPER_DIR"
+   #echo "file types = ${FILE_TYPES}"
+   #echo "interval   = ${CHANGE_INTERVAL_MINUTES}"
+
    currPicNum=0
 
    if [ ${REQUIRE_ERR} != 0 ]
@@ -66,7 +76,7 @@ main() {
    do
       pics=`ls ${FILE_TYPES} 2> /dev/null`
       count=0
-      newPicNum=0
+      newPicNum=${currPicNum}
 
       if [ "${pics}" != "" ]
       then
@@ -77,12 +87,16 @@ main() {
       then
          while [ ${newPicNum} = ${currPicNum} ]
          do
-            newPicNum=$((1 + RANDOM % $count))
+            newPicNum=$((1 + RANDOM % count))
          done
       fi
 
       chosenPic=`echo "${pics}" | head -${newPicNum} | tail -1`
-      gsettings set org.gnome.desktop.background picture-uri "'file:///${WALLPAPER_DIR}/${chosenPic}'"
+
+      if [ "${chosenPic}" != "" ]
+      then
+         gsettings set org.gnome.desktop.background picture-uri "'file:///${WALLPAPER_DIR}/${chosenPic}'"
+      fi
 
       currPicNum=${newPicNum}
 
@@ -90,4 +104,64 @@ main() {
    done
 }
 
-main
+parseArgs() {
+   OPTS=$(getopt -o "d:f:i:h" --long "directory:,file-types:,interval:,--help" -n "$(basename $0)" -- "${@}")
+
+   if [ ${?} != 0 -o ${#} != 6 ]
+   then
+      usage
+      exit ${EXIT_CODE_USAGE}
+   fi
+
+   eval set -- "${OPTS}"
+
+   while [ ${#} -gt 0 ]
+   do
+      #echo "iteration:  $1 $2"
+
+      case "${1}" in
+         -d | --directory )
+            WALLPAPER_DIR="${2}"
+            shift 2
+            ;;
+
+         -f | --file-types )
+            FILE_TYPES="${2}"
+            shift 2
+            ;;
+
+         -i | --interval )
+            CHANGE_INTERVAL_MINUTES=${2};
+            shift 2
+            ;;
+
+         -h | --help )
+            usage
+            exit
+            ;;
+
+         -- )  # end-of-input indicator
+            shift
+            break
+            ;;
+         * )
+            usage
+            exit ${EXIT_CODE_USAGE}
+            ;;
+      esac
+   done
+}
+
+usage() {
+   echo "Usage:  $(basename $0) [OPTIONS]\n"
+
+   echo "Required arguments:\n"
+   echo "-d, --directory [VALUE]   Directory containing images"
+   echo "-f, --file-types [VALUE]  Comma-separated wildcard string, like \"*png, *.jpg\""
+   echo "-i, --interval [VALUE]    Rotation interval, measured in minutes"
+
+   echo "\nOptional arguments:\n"
+   echo "-h, --help   Displays this usage info"
+}
+
+main "${@}"
