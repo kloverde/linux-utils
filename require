@@ -5,7 +5,9 @@ then
    export REQUIRE_ERR=0
 fi
 
-if [ "`which ${1}`" = "" ]
+which ${1} > /dev/null
+
+if [ ${?} != 0 ]
 then
    echo "This application requires ${1}.  Install it using your package manager and try again."
    export REQUIRE_ERR=1
