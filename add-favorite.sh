@@ -41,22 +41,22 @@
 . require "tr"    # dependency of yesno
 
 
-typeset -r EXIT_CODE_SUCCESS=0
-typeset -r EXIT_CODE_INCORRECT_USAGE=1
-typeset -r EXIT_CODE_USER_ABORT=2
-typeset -r EXIT_CODE_FILE_NOT_FOUND=3
-typeset -r EXIT_CODE_FAVORITE_ENTRY_ALREADY_EXISTS=4
-typeset -r EXIT_CODE_LAUNCHER_ALREADY_INSTALLED=5
-typeset -r EXIT_CODE_REQUIRED_SOFTWARE_NOT_INSTALLED=6
-typeset -r EXIT_CODE_CHMOD_FAILED=7
-typeset -r EXIT_CODE_CHOWN_FAILED=8
-typeset -r EXIT_CODE_CHGRP_FAILED=9
-typeset -r EXIT_CODE_FILE_MOVE_FAILED=10
-typeset -r EXIT_CODE_GSETTINGS_FAILED=11
-typeset -r EXIT_CODE_SYMBOLIC_LINK_FAILED=12
+declare -r EXIT_CODE_SUCCESS=0
+declare -r EXIT_CODE_INCORRECT_USAGE=1
+declare -r EXIT_CODE_USER_ABORT=2
+declare -r EXIT_CODE_FILE_NOT_FOUND=3
+declare -r EXIT_CODE_FAVORITE_ENTRY_ALREADY_EXISTS=4
+declare -r EXIT_CODE_LAUNCHER_ALREADY_INSTALLED=5
+declare -r EXIT_CODE_REQUIRED_SOFTWARE_NOT_INSTALLED=6
+declare -r EXIT_CODE_CHMOD_FAILED=7
+declare -r EXIT_CODE_CHOWN_FAILED=8
+declare -r EXIT_CODE_CHGRP_FAILED=9
+declare -r EXIT_CODE_FILE_MOVE_FAILED=10
+declare -r EXIT_CODE_GSETTINGS_FAILED=11
+declare -r EXIT_CODE_SYMBOLIC_LINK_FAILED=12
 
-typeset -r LAUNCHER_HOME_DIR=~/.local/share/applications
-typeset -r LAUNCHER_LINK_DIR=/usr/share/applications
+declare -r LAUNCHER_HOME_DIR=~/.local/share/applications
+declare -r LAUNCHER_LINK_DIR=/usr/share/applications
 
 shopt -s expand_aliases
 alias echo="echo -e"
