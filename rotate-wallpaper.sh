@@ -103,7 +103,7 @@ main() {
 }
 
 parseArgs() {
-   OPTS=$(getopt -o "d:f:i:h" --long "directory:,file-types:,interval:,--help" -n "$(basename $0)" -- "${@}")
+   OPTS=$(getopt -o "d:f:i:" --long "directory:,file-types:,interval:" -n "$(basename $0)" -- "${@}")
 
    if [ ${?} != 0 -o ${#} != 6 ]
    then
@@ -133,18 +133,9 @@ parseArgs() {
             shift 2
             ;;
 
-         -h | --help )
-            usage
-            exit
-            ;;
-
          -- )  # end-of-input indicator
             shift
             break
-            ;;
-         * )
-            usage
-            exit ${EXIT_CODE_USAGE}
             ;;
       esac
    done
