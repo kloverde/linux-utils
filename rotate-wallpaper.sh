@@ -129,7 +129,7 @@ parseArgs() {
             ;;
 
          -i | --interval )
-            CHANGE_INTERVAL_MINUTES=${2};
+            CHANGE_INTERVAL_MINUTES=${2}
             shift 2
             ;;
 
