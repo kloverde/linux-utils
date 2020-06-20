@@ -42,12 +42,12 @@
 
 
 declare -r EXIT_CODE_SUCCESS=0
-declare -r EXIT_CODE_INCORRECT_USAGE=1
-declare -r EXIT_CODE_USER_ABORT=2
-declare -r EXIT_CODE_FILE_NOT_FOUND=3
-declare -r EXIT_CODE_FAVORITE_ENTRY_ALREADY_EXISTS=4
-declare -r EXIT_CODE_LAUNCHER_ALREADY_INSTALLED=5
-declare -r EXIT_CODE_REQUIRED_SOFTWARE_NOT_INSTALLED=6
+declare -r EXIT_CODE_REQUIRED_SOFTWARE_NOT_INSTALLED=1
+declare -r EXIT_CODE_INCORRECT_USAGE=2
+declare -r EXIT_CODE_USER_ABORT=3
+declare -r EXIT_CODE_FILE_NOT_FOUND=4
+declare -r EXIT_CODE_FAVORITE_ENTRY_ALREADY_EXISTS=5
+declare -r EXIT_CODE_LAUNCHER_ALREADY_INSTALLED=6
 declare -r EXIT_CODE_CHMOD_FAILED=7
 declare -r EXIT_CODE_CHOWN_FAILED=8
 declare -r EXIT_CODE_CHGRP_FAILED=9
@@ -161,19 +161,22 @@ main() {
             return ${EXIT_CODE_CHMOD_FAILED}
          fi
 
-         echo "\nMoving ${launcherFullPath} to ${LAUNCHER_HOME_DIR}..."
-
          mkdir -p "${LAUNCHER_HOME_DIR}"
 
-         mv "${launcherFullPath}" "${LAUNCHER_HOME_DIR}"
-         rc=${?}
-
-         if [ ${rc} = 0 ]
+         if [ "${launcherFullPath}" != "${LAUNCHER_HOME_DIR}/${launcherFilename}" ]
          then
-            echo "File moved successfully\n"
-         else
-            echo "File move failed with exit code ${rc}"
-            return ${EXIT_CODE_FILE_MOVE_FAILED}
+            echo "\nMoving ${launcherFullPath} to ${LAUNCHER_HOME_DIR}..."
+
+            mv "${launcherFullPath}" "${LAUNCHER_HOME_DIR}"
+            rc=${?}
+
+            if [ ${rc} = 0 ]
+            then
+               echo "File moved successfully\n"
+            else
+               echo "File move failed with exit code ${rc}"
+               return ${EXIT_CODE_FILE_MOVE_FAILED}
+            fi
          fi
 
          if [ -f "${LAUNCHER_LINK_DIR}/${launcherFilename}" ]
@@ -182,14 +185,17 @@ main() {
 
             . yesno "Replace the global launcher with yours?  This could affect other users."
          else
-            . yesNo "Make this launcher available to others?"
+            . yesno "Make this launcher available to others?"
          fi
 
          if [ "${YESNO}" = "Y" ]
          then
             echo "\nCreating symlink in ${LAUNCHER_LINK_DIR}..."
 
-            sudo rm "${LAUNCHER_LINK_DIR}/${launcherFilename}"
+            if [ -f "${LAUNCHER_LINK_DIR}/${launcherFilename}" ]
+            then
+               sudo rm "${LAUNCHER_LINK_DIR}/${launcherFilename}"
+            fi
 
             sudo ln -s "${LAUNCHER_HOME_DIR}/${launcherFilename}" --target-directory "${LAUNCHER_LINK_DIR}"
             rc=${?}
