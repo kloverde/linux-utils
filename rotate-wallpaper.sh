@@ -111,8 +111,6 @@ parseArgs() {
       exit ${EXIT_CODE_USAGE}
    fi
 
-   eval set -- "${OPTS}"
-
    while [ ${#} -gt 0 ]
    do
       #echo "iteration:  $1 $2"
