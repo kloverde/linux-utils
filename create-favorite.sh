@@ -56,7 +56,16 @@ main() {
 
    declare -r comment=`prompt "Enter description"`
 
-   declare -r executable=`prompt "Enter executable name"`
+   executable=`prompt "Enter executable name"`
+   executableExists=`which ${executable}`
+   executableExists=${?}
+
+   while [ ${executableExists} -ne 0 ]
+   do
+      executable=`prompt "${executable} not found on PATH.  Enter executable name"`
+      executableExists=`which ${executable}`
+      executableExists=${?}
+   done
 
    declare -r class=`prompt "Enter StartupWMClass.  This is an identifier used for taskbar grouping [${executable}]" "${executable}"`
 
