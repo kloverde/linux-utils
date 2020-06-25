@@ -21,7 +21,7 @@ If invoked without `--install`, it invokes `add-favorite.sh` without arguments.
 A helper script to check for script dependencies
 
 
-# rotate-wallpaper
+# rotate-wallpaper.sh
 
 This is a script for Gnome users that changes the desktop background on a schedule.  The directory, file types and rotation interval are provided as command-line arguments.  I wouldn't be surprised if plenty of distros have this functionality out of the box, but if yours doesn't, this does the job -- just call it from your .profile.
 
