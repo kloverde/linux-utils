@@ -32,6 +32,7 @@
 
 . require "bash"
 . require "getopt"
+. require "awk"
 
 
 declare -r EXIT_CODE_SUCCESS=0
@@ -56,14 +57,18 @@ main() {
 
    declare -r comment=`prompt "Enter description"`
 
-   executable=`prompt "Enter executable name"`
-   executableExists=`which ${executable}`
+   exec=`prompt "Enter execution command (params allowed)"`
+   executable=`echo ${exec} | awk '{print $1}'`  # Strip flags
+
+   which ${executable} > /dev/null
    executableExists=${?}
 
    while [ ${executableExists} -ne 0 ]
    do
-      executable=`prompt "${executable} not found on PATH.  Enter executable name"`
-      executableExists=`which ${executable}`
+      exec=`prompt "${executable} not found on PATH.  Enter execution command (params allowed)"`
+      executable=`echo ${exec} | awk '{print $1}'`  # Strip flags
+
+      which ${executable} > /dev/null
       executableExists=${?}
    done
 
@@ -97,7 +102,7 @@ Encoding=UTF-8
 Name=${name}
 Comment=${comment}
 Type=Application
-Exec=${executable}
+Exec=${exec}
 StartupWMClass=${class}
 Icon=${icon}
 Categories=${categories}
