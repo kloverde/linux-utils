@@ -9,11 +9,11 @@ The script has two modes of adding a favorite:  either "installing" or not insta
 
 # create-favorite.sh
 
-This script makes it easy to create a Gnome .desktop launcher by simply answering prompts.  After creating the launcher, `add-favorite.sh` is called.
+This script makes it easy to create a Gnome .desktop launcher by simply answering prompts.
 
 If invoked with the `--install` flag, it invokes `add-favorite.sh --install`.
 
-If invoked without `--install`, it invokes `add-favorite.sh` without arguments.
+If invoked without `--install`, `add-favorite.sh` is not called.  In other words, this has the effect of just adding a shortcut to the Gnome menu.
 
 
 # require

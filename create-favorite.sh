@@ -106,15 +106,13 @@ Exec=${exec}
 StartupWMClass=${class}
 Icon=${icon}
 Categories=${categories}
-" > ${launcherPath}
+" > "${launcherPath}"
 
    echo "\nLauncher saved to ${launcherPath}\n\nInstalling...\n"
 
    if [ ${INSTALL} = true ]
    then
       add-favorite.sh --install "${launcherPath}"
-   else
-      add-favorite.sh "${launcherPath}"
    fi
 }
 
