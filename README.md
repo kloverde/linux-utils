@@ -2,7 +2,7 @@
 
 This is a script for Gnome users that can 'favorite', or pin, an application if you don't see the option to do so when right-clicking the application's taskbar button, or if you just need to create a custom shortcut for something.  This script helps automate the process.
 
-You'll need to create a .desktop launcher and then provide it as a command-line argument to the script; the script will take care of the rest.  If you don't already have a .desktop launcher, you can use `create-favorite.sh` instead of this script.  `Create-launcher.sh` will help you create a launcher and then it will call `add-favorite.sh` for you.
+You'll need to create a .desktop launcher and then provide it as a command-line argument to the script; the script will take care of the rest.  If you don't already have a .desktop launcher, you can use `create-launcher.sh` instead of this script.  `Create-launcher.sh` will help you create a launcher and then it will call `add-favorite.sh` for you.
 
 The script has two modes of adding a favorite:  either "installing" or not installing the launcher.  Installing a launcher (by using the optional --install flag) will move the specified launcher to ~/.local/share/applications.  This option is intended to be used with launchers you create yourself and would therefore want to restore from a backup if the need should arise (presumably your /home is backed up).  It will then offer to create a symlink to it in /usr/share/applications if you want to share it with other accounts.
 
