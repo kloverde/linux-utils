@@ -110,7 +110,7 @@ addGnomeFavorite() {
 }
 
 main() {
-   launcherFullPath=`readlink -e ${2}`
+   launcherFullPath=`readlink -e "${2}"`
 
    if [ ${?} != 0 ]
    then
@@ -253,7 +253,7 @@ else
    then
       if [ "${1}" = "--install" ]
       then
-         main "${1}" ${2}
+         main "${1}" "${2}"
       else
          usage
          exit ${EXIT_CODE_INCORRECT_USAGE}
