@@ -108,10 +108,11 @@ Icon=${icon}
 Categories=${categories}
 " > "${launcherPath}"
 
-   echo "\nLauncher saved to ${launcherPath}\n\nInstalling...\n"
+   echo "\nLauncher saved to ${launcherPath}"
 
    if [ ${INSTALL} = true ]
    then
+      echo "\n\nInstalling...\n"
       add-favorite.sh --install "${launcherPath}"
    fi
 }
