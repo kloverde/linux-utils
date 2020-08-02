@@ -36,7 +36,6 @@
 . require "gsettings"
 . require "head"
 . require "tail"
-. require "sleep"
 
 shopt -s expand_aliases
 alias echo="echo -e"
