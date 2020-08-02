@@ -30,12 +30,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-. require "bash"
-. require "getopt"
-. require "sleep"
-. require "gsettings"
-. require "head"
-. require "tail"
+. require bash getopt sleep gsettings head tail
 
 shopt -s expand_aliases
 alias echo="echo -e"

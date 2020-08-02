@@ -1,14 +1,19 @@
-#/bin/bash
+#!/bin/bash
 
 if [ "${REQUIRE_ERR}" = "" ]
 then
    export REQUIRE_ERR=0
 fi
 
-which ${1} > /dev/null
+while [ ${#} -gt 0 ]
+do
+   which ${1} > /dev/null
 
-if [ ${?} != 0 ]
-then
-   echo "This application requires ${1}.  Install it using your package manager and try again."
-   export REQUIRE_ERR=1
-fi
+   if [ ${?} != 0 ]
+   then
+      echo "This application requires ${1}.  Install it using your package manager and try again."
+      export REQUIRE_ERR=1
+   fi
+
+   shift
+done

@@ -30,15 +30,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-. require "bash"
-. require "getopt"
-. require "gsettings"
-. require "sudo"
-. require "sed"
-. require "basename"
-. require "readlink"
-. require "ln"
-. require "tr"    # dependency of yesno
+. require bash getopt gsettings sudo sed basename readlink ln tr
 
 
 declare -r EXIT_CODE_SUCCESS=0

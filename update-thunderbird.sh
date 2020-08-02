@@ -30,14 +30,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-. require "bash"
-. require "printf"
-. require "wget"
-. require "tar"
-. require "chmod"
-. require "chown"
-. require "sudo"
-. require "tr"    # dependency of yesno
+. require bash printf wget tar chmod chown sudo tr
 
 
 URL="https://download.mozilla.org/?product=thunderbird-latest&os=linux64&lang=en-US"

@@ -30,9 +30,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-. require "bash"
-. require "getopt"
-. require "awk"
+. require bash getopt awk
 
 
 declare -r EXIT_CODE_SUCCESS=0
