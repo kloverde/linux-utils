@@ -37,6 +37,10 @@
 . require "head"
 . require "tail"
 . require "sleep"
+. require "identify"
+. require "xrandr"
+. require "grep"
+. require "awk"
 
 shopt -s expand_aliases
 alias echo="echo -e"
@@ -49,6 +53,7 @@ main() {
    WALLPAPER_DIR=""
    FILE_TYPES=""
    CHANGE_INTERVAL_MINUTES=0
+   SCALING_ENABLED=false
 
    parseArgs "${@}"
 
@@ -93,19 +98,46 @@ main() {
 
       if [ "${chosenPic}" != "" ]
       then
+         echo "\nusing ${chosenPic}"
+
+         if [ ${SCALING_ENABLED} = true ]
+         then
+            imgWidth=`identify -format "%w" "${chosenPic}"`
+            imgHeight=`identify -format "%h" "${chosenPic}"`
+            imgRatio=`awk 'BEGIN { print ARGV[1] / ARGV[2] }' ${imgWidth} ${imgHeight}`
+
+            screenDims=`xrandr --query | grep -A 1 connected | grep -v connected | head -1 | awk '{print $1}'`
+            screenWidth=`echo ${screenDims} | awk 'BEGIN { FS="x"} { print $1; }'`
+            screenHeight=`echo ${screenDims} | awk 'BEGIN { FS="x"} { print $2; }'`
+            screenRatio=`awk 'BEGIN { print ARGV[1] / ARGV[2] }' ${screenWidth} ${screenHeight}`
+
+            if [ ${imgRatio} = ${screenRatio} ]
+            then
+               scalingMode="scaled"
+            else
+               scalingMode="zoom"
+            fi
+
+            echo "image is ${imgWidth} x ${imgHeight} (${imgRatio})"
+            echo "screen is ${screenWidth} x ${screenHeight} (${screenRatio})"
+            echo "scaling mode ${scalingMode}"
+
+            gsettings set org.gnome.desktop.background picture-options "${scalingMode}"
+         fi
+
          gsettings set org.gnome.desktop.background picture-uri "'file:///${WALLPAPER_DIR}/${chosenPic}'"
       fi
 
       currPicNum=${newPicNum}
 
-      sleep ${CHANGE_INTERVAL_MINUTES}m
+      sleep ${CHANGE_INTERVAL_MINUTES}s
    done
 }
 
 parseArgs() {
-   OPTS=$(getopt -o "d:f:i:" --long "directory:,file-types:,interval:" -n "$(basename $0)" -- "${@}")
+   OPTS=$(getopt -o "d:f:i:s" --long "directory:,file-types:,interval:,scale" -n "$(basename $0)" -- "${@}")
 
-   if [ ${?} != 0 -o ${#} != 6 ]
+   if [[ ${?} != 0 || ( ${#} != 6 && ${#} != 7 ) ]]
    then
       usage
       exit ${EXIT_CODE_USAGE}
@@ -131,10 +163,19 @@ parseArgs() {
             shift 2
             ;;
 
+         -s | --scale )
+            SCALING_ENABLED=true
+            shift
+            ;;
+
          -- )  # end-of-input indicator
             shift
             break
             ;;
+
+         * )
+            usage
+            exit ${EXIT_CODE_USAGE}
       esac
    done
 }
@@ -143,12 +184,16 @@ usage() {
    echo "Usage:  $(basename $0) [OPTIONS]\n"
 
    echo "Required arguments:\n"
-   echo "-d, --directory [VALUE]   Directory containing images"
-   echo "-f, --file-types [VALUE]  Space-separated wildcard string, like \"*png *.jpg\""
+   echo "-d, --directory [VALUE]   Directory containing images\n"
+   echo "-f, --file-types [VALUE]  Space-separated wildcard string, like \"*png *.jpg\"\n"
    echo "-i, --interval [VALUE]    Rotation interval, measured in minutes"
 
    echo "\nOptional arguments:\n"
-   echo "-h, --help   Displays this usage info"
+   echo "-h, --help   Displays this usage info\n"
+   echo "-s, --scale  Fills the entire screen with the image.  If the image's aspect"
+   echo "             ratio is the same as the screen, the image is scaled.  If the"
+   echo "             aspect ratio is different, the image is scaled and cropped to"
+   echo "             preserve its aspect ratio."
 }
 
 main "${@}"
