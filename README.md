@@ -23,7 +23,7 @@ A helper script to check for script dependencies
 
 # rotate-wallpaper.sh
 
-This is a script for Gnome users that changes the desktop background on a schedule.  The directory, file types and rotation interval are provided as command-line arguments.  I wouldn't be surprised if plenty of distros have this functionality out of the box, but if yours doesn't, this does the job -- just call it from your .profile.
+This is a script for Gnome users that changes the desktop background on an interval.  The directory, file types and rotation interval are provided as command-line arguments.  I wouldn't be surprised if some distros have this functionality out of the box, but if yours doesn't, this does the job -- just call it from your .profile.
 
 Since the script doesn't terminate, you have to be sure to run it in the background when calling it from your .profile, otherwise you won't be able to get to your desktop.
 
@@ -33,6 +33,7 @@ To run a command in the background, you include an ampersand as the last part of
 rotate-wallpaper.sh --directory ~/Pictures --file-types "*.png *.jpg" --interval 15 &
 ```
 
+See the help screen (`--help`) for information about configurable image scaling options.
 
 # turn-off-screen.sh
 
