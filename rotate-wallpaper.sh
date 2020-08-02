@@ -173,7 +173,7 @@ usage() {
 
    echo "\nOptional arguments:\n"
    echo "-h, --help           Displays this usage info\n"
-   echo "-s, --scale [1:2]    Scales the image when its dimensions don't match the"
+   echo "-s, --scale [1|2]    Scales the image when its dimensions don't match the"
    echo "                     screen's dimensions.  The aspect ratio is preserved."
    echo "                     If this flag is not provided, the current system"
    echo "                     setting is used.\n"
