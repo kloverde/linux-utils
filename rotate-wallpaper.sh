@@ -30,7 +30,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-. require bash getopt sleep gsettings head tail
+. require bash getopt sleep gsettings head tail wc
 
 shopt -s expand_aliases
 alias echo="echo -e"
@@ -106,7 +106,7 @@ main() {
 
       currPicNum=${newPicNum}
 
-      sleep ${CHANGE_INTERVAL_MINUTES}s
+      sleep ${CHANGE_INTERVAL_MINUTES}m
    done
 }
 
