@@ -47,10 +47,6 @@ main() {
 
    parseArgs "${@}"
 
-   #echo "directory  = $WALLPAPER_DIR"
-   #echo "file types = ${FILE_TYPES}"
-   #echo "interval   = ${CHANGE_INTERVAL_MINUTES}"
-
    currPicNum=0
 
    if [ ${REQUIRE_ERR} != 0 ]
@@ -121,8 +117,6 @@ parseArgs() {
 
    while [ ${#} -gt 0 ]
    do
-      #echo "iteration:  $1 $2"
-
       case "${1}" in
          -d | --directory )
             WALLPAPER_DIR="${2}"
