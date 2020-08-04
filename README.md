@@ -35,14 +35,32 @@ rotate-wallpaper.sh --directory ~/Pictures --file-types "*.png *.jpg" --interval
 
 See the help screen (`--help`) for information about configurable image scaling options.
 
+
 # turn-off-screen.sh
 
 Turns off the monitor without putting the machine into suspend mode
 
 
+# update-app.sh
+
+This is a general-purpose application updater script.  Easily update software by creating a simple wrapper script.  This is useful if you have applications that you don't manage via a package manager.
+
+This script is only useful for the software you're managing if:
+
+1.  A static URL exists that always gives you the latest release
+2.  The download artifact is in an archive that can be extracted by `tar`
+
+Once the archive is extracted, the script is done.  If something needs to be done afterward, like running an installer, etc., add it to your wrapper script.
+
+This script accepts (requires) two arguments without flags:
+
+1.  The URL of the application's latest release
+2.  The destination directory (the full extract path - for example, /opt/my-app)
+
+
 # update-thunderbird.sh
 
-Upgrades Thunderbird to the latest version.  This is useful if you don't manage Thunderbird via a package manager.
+A wrapper of `update-app.sh`.  Upgrades Thunderbird to the latest 64-bit Linux release.
 
 
 # yesno
