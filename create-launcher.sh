@@ -30,7 +30,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-. require bash getopt awk
+. require bash getopt awk basename
 
 
 declare -r EXIT_CODE_SUCCESS=0
@@ -57,6 +57,7 @@ main() {
 
    exec=`prompt "Enter execution command (params allowed)"`
    executable=`echo ${exec} | awk '{print $1}'`  # Strip flags
+   executableBasename=`basename ${executable}`
 
    which ${executable} > /dev/null
    executableExists=${?}
@@ -70,7 +71,7 @@ main() {
       executableExists=${?}
    done
 
-   declare -r class=`prompt "Enter StartupWMClass.  This is an identifier used for taskbar grouping [${executable}]" "${executable}"`
+   declare -r class=`prompt "Enter StartupWMClass.  This is an identifier used for taskbar grouping.  You can find this value by running 'xprop WM_CLASS' then clicking on the application while it's running.  If no value is reported, provide your own.  [${executableBasename}]" "${executableBasename}"`
 
    icon=`prompt "Enter full icon path"`
 
@@ -81,7 +82,7 @@ main() {
 
    declare -r categories=`prompt "Enter categories (semicolon-delimited)"`
 
-   declare -r launcher=`prompt "Enter name to save launcher as [${executable}]" "${executable}"`
+   declare -r launcher=`prompt "Enter name to save launcher as [${executableBasename}]" "${executableBasename}"`
 
    declare -r launcherPath=~/.local/share/applications/${launcher}.desktop
 
