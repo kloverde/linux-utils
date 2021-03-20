@@ -43,6 +43,7 @@ declare -r EXIT_CODE_BACKUP_FAILED=8
 declare -r EXIT_CODE_DIRECTORY_MOVE_FAILED=9
 declare -r EXIT_CODE_DEST_DIR_NOT_EXIST=10
 declare -r EXIT_CODE_USAGE=11
+declare -r EXIT_CODE_COULD_NOT_CREATE_TEMP_DIR=12
 
 
 main() {
@@ -68,10 +69,28 @@ main() {
    wget --no-verbose --show-progress -O ${FILE} --content-disposition ${URL}
    abort ${?} ${EXIT_CODE_DOWNLOAD_FAILED} "Download failed"
 
+   mkdir -p ${TEMP_EXTRACT_PATH} > /dev/null
+   abort ${?} ${EXIT_CODE_COULD_NOT_CREATE_TEMP_DIR} "Could not create temp directory ${TEMP_EXTRACT_PATH}"
+
    echo "Extracting..."
 
-   tar -xf ${FILE}
+   tar -xf ${FILE} -C ${TEMP_EXTRACT_PATH}
    abort ${?} ${EXIT_CODE_EXTRACT_FAILED} "Extract failed.  Temp file `pwd`/${FILE} not removed."
+
+   # Did the archive put everything in a container directory?
+
+   contentListing=`ls -l ${TEMP_EXTRACT_PATH} | tail -n +2`
+
+   if [[ `echo "${contentListing}" | wc -l` = 1 ]] && [[ `echo "${contentListing}" | cut -c 1` = "d" ]]
+   then
+      # Now we know that ${contentListing} is actually just the name of a parent directory we want to get rid of
+      unwantedDir=`ls ${TEMP_EXTRACT_PATH}`
+
+      pushd ${TEMP_EXTRACT_PATH}/${unwantedDir} > /dev/null
+      mv * ..
+      popd > /dev/null
+      rmdir ${TEMP_EXTRACT_PATH}/${unwantedDir}
+   fi
 
    echo "Cleaning up temp file..."
 
