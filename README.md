@@ -63,6 +63,11 @@ This script accepts (requires) two arguments without flags:
 A wrapper of `update-app.sh`.  Upgrades Thunderbird to the latest 64-bit Linux release.
 
 
+# update-vscode.sh
+
+A wrapper of `update-app.sh`.  Upgrades VS Code to the latest 64-bit Linux release.
+
+
 # yesno
 
 A helper script to display a configurable yes/no prompt
