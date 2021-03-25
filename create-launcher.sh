@@ -146,7 +146,7 @@ usage() {
 }
 
 parseArgs() {
-   OPTS=$(getopt -o "hi" --long "install" -n "$(basename $0)" -- "${@}")
+   OPTS=$(getopt -o "i" --long "install" -n "$(basename $0)" -- "${@}")
 
    if [ ${?} != 0  ]
    then
