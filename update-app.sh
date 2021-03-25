@@ -83,8 +83,9 @@ main() {
 
    if [[ `echo "${contentListing}" | wc -l` = 1 ]] && [[ `echo "${contentListing}" | cut -c 1` = "d" ]]
    then
-      # Now we know that ${contentListing} is actually just the name of a parent directory we want to get rid of
-      unwantedDir=`ls ${TEMP_EXTRACT_PATH}`
+      # Now we know that ${contentListing} is actually just a directory we want to get rid of
+      unwantedDir=_extract_${RANDOM}
+      mv "${TEMP_EXTRACT_PATH}/`ls ${TEMP_EXTRACT_PATH}`" ${TEMP_EXTRACT_PATH}/${unwantedDir}
 
       pushd ${TEMP_EXTRACT_PATH}/${unwantedDir} > /dev/null
       mv * ..
