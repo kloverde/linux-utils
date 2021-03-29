@@ -30,7 +30,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-. require bash getopt awk basename
+. require bash getopt basename
 
 
 declare -r EXIT_CODE_SUCCESS=0
@@ -51,25 +51,27 @@ main() {
 
    parseArgs "${@}"
 
-   declare -r name=`prompt "Enter shortcut name.  This is how the shorcut will appear in the Gnome menu"`
+   declare -r name=`prompt "Enter shortcut name.  This is how the shortcut will appear in the Gnome menu"`
 
    declare -r comment=`prompt "Enter description"`
 
-   exec=`prompt "Enter execution command (params allowed)"`
-   executable=`echo ${exec} | awk '{print $1}'`  # Strip flags
-   executableBasename=`basename ${executable}`
+   exec=`prompt "Enter the full path to the executable.  Don't enter arguments/flags - that will be done in the next step"`
 
-   which ${executable} > /dev/null
-   executableExists=${?}
-
-   while [ ${executableExists} -ne 0 ]
+   while [ ! -f "${exec}" ]
    do
-      exec=`prompt "${executable} not found on PATH.  Enter execution command (params allowed)"`
-      executable=`echo ${exec} | awk '{print $1}'`  # Strip flags
-
-      which ${executable} > /dev/null
-      executableExists=${?}
+      echo "${exec} not found"
+      exec=`prompt "Enter the full path to the executable.  Don't enter arguments/flags - that will be done in the next step)"`
    done
+
+   executableBasename=`basename "${exec}"`
+   exec="\"${exec}\""
+
+   read -p "Enter arguments/flags, if any: " args
+
+   if [ "${args}" != "" ]
+   then
+      exec="${exec} ${args}"
+   fi
 
    declare -r class=`prompt "Enter StartupWMClass.  This is an identifier used for taskbar grouping.  You can find this value by running 'xprop WM_CLASS' then clicking on the application while it's running.  If no value is reported, provide your own.  [${executableBasename}]" "${executableBasename}"`
 
@@ -177,3 +179,4 @@ parseArgs() {
 }
 
 main "${@}"
+
